@@ -11,6 +11,7 @@ import os from 'os'
 import fileUpload from 'fastify-file-upload'
 import fastifyStatic from '@fastify/static'
 
+const __dirname = path.resolve();
 const fastify = Fastify({
     logger: {
         transport: {
@@ -24,7 +25,6 @@ const fastify = Fastify({
 })
 fastify.register(fileUpload)
 
-const __dirname = path.resolve();
 fastify.register(fastifyStatic, {
     root: path.join(__dirname, "../client/build"),
     prefix: '/', // optional: default '/'
@@ -39,12 +39,6 @@ export default ({ base_path, port }) => {
     for (var dev in ifaces) {
         ifaces[dev].filter((details) => details.family === 'IPv4' && details.internal === false ? ADDRESS = details.address: undefined);
     }
-
-    // Declare a route
-    // fastify.get('/', async (req, _res) => {
-    //     req.log.info('Sending hello world')
-    //     return { hello: 'world' }
-    // })
 
     const readdir = util.promisify(fs.readdir)
 
