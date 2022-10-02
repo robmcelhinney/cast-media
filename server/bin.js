@@ -30,7 +30,10 @@ const cli = meow(`
     }
 })
 
-const path = cli.flags.path != "" ? cli.flags.path : undefined
+let path = cli.flags.path != "" ? cli.flags.path : undefined
+if (!path.endsWith('/')) {
+    path = path + '/'
+}
 const port = Number.isInteger(cli.flags.port) ? 
         cli.flags.port : undefined
 

@@ -45,14 +45,9 @@ export default ({ base_path, port }) => {
     const base_dir = base_path || process.cwd()
 
     fastify.get('/api/files', async (req, res) => {
-        let dir
-        if (req.query.path && req.query.path !== "undefined") {
-            dir = path.join(base_dir, req.query.path)
-        } else {
-            dir = base_dir
-        }
+        let dir = base_dir
         if (!checkPathOK(dir)) {
-            req.log.error('Cannot find files from dir: %s', dir)
+            req.log.error('Path not valid: %s', dir)
             return res.code(403).send("Can't go back up path")
         }
         try {
@@ -64,6 +59,10 @@ export default ({ base_path, port }) => {
             return res.code(501).send("Can't browse files")
         }
     })
+    
+    const checkFile = (file) => {
+        return (fs.existsSync(base_dir + file)) ? true : false
+    }
 
     async function listDir(dir) {
         let jsonResult = {}
@@ -77,19 +76,9 @@ export default ({ base_path, port }) => {
         }
         files = files.filter((item) => !/(^|\/)\.[^\/\.]/g.test(item))
         files.forEach((file) => {
-            jsonResult[file] = path.join(rel_dir, file)
-            let is_dir = false
-
-            // Is directory?
-            let file_path = path.join(dir, file)
-            if (
-                fs.existsSync(file_path) &&
-                fs.lstatSync(file_path).isDirectory()
-            ) {
-                is_dir = true
+            if (file.endsWith('.mp3') || file.endsWith('.wav')) {
+                jsonResult[file] = path.join(rel_dir, file)
             }
-
-            jsonResult[file] = is_dir
         })
         return jsonResult
     }
@@ -116,14 +105,27 @@ export default ({ base_path, port }) => {
             return res.code(404).send({"error":"Device not selected"})
         }
         let file = req.params.file
-        var mediaURL = 'http://' + ADDRESS + ':' + port + '/api/stream/' + file
-        playURL(mediaURL, req, res)
+        let mediaURL = 'http://' + ADDRESS + ':' + port + '/api/stream/' + file
+        let coverFile = file.replace(/(.mp3|.wav)/g, ".png")
+        let coverURL = 'http://' + ADDRESS + ':' + port + '/api/stream/' + coverFile
+        req.log.info('Casting url with URL: {%s}', mediaURL)
+        let media = {
+            url : mediaURL
+        }
+        if (checkFile(coverFile)) {
+            media = {
+                url : mediaURL,
+                cover: {
+                  url: coverURL
+                }
+            }
+        }
+        playURL(media, req, res)
     })
 
-    const playURL = (url, req, res) => {
+    const playURL = (media, req, res) => {
         let selectedDevice = client.devices.find(device => device.friendlyName === SELECT_CAST_DEVICE)
-        req.log.info('Casting url to Selected Device {%s} with URL: {%s}', selectedDevice, url)
-        selectedDevice.play(url, (err) => {
+        selectedDevice.play(media, (err) => {
             if (!err) {
                 req.log.info('Playing on your chromecast')
                 return res.code(200)
