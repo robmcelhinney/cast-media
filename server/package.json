@@ -4,8 +4,10 @@
   "description": "cast local content to chromecast",
   "main": "index.js",
   "type": "module",
+  "bin": "index.js",
   "dependencies": {
     "@fastify/multipart": "^7.2.0",
+    "@fastify/static": "^6.5.0",
     "chromecast-api": "^0.4.0",
     "fastify": "^4.6.0",
     "fastify-file-upload": "^4.0.0",
@@ -14,7 +16,9 @@
     "pino-pretty": "^9.1.0"
   },
   "scripts": {
-    "start": "node index.js",
+    "start-server": "node bin.js",
+    "start": "npm run build-client && node bin",
+    "build-client": "cd ../client && npm run build && cd ../server",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [

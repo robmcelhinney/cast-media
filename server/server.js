@@ -9,6 +9,7 @@ import Fastify from 'fastify'
 import ChromecastAPI from 'chromecast-api'
 import os from 'os'
 import fileUpload from 'fastify-file-upload'
+import fastifyStatic from '@fastify/static'
 
 const fastify = Fastify({
     logger: {
@@ -23,6 +24,12 @@ const fastify = Fastify({
 })
 fastify.register(fileUpload)
 
+const __dirname = path.resolve();
+fastify.register(fastifyStatic, {
+    root: path.join(__dirname, "../client/build"),
+    prefix: '/', // optional: default '/'
+})
+
 export default ({ base_path, port }) => {
     const client = new ChromecastAPI()
     let SELECT_CAST_DEVICE = ""
@@ -34,10 +41,10 @@ export default ({ base_path, port }) => {
     }
 
     // Declare a route
-    fastify.get('/', async (req, _res) => {
-        req.log.info('Sending hello world')
-        return { hello: 'world' }
-    })
+    // fastify.get('/', async (req, _res) => {
+    //     req.log.info('Sending hello world')
+    //     return { hello: 'world' }
+    // })
 
     const readdir = util.promisify(fs.readdir)
 
