@@ -13,6 +13,11 @@ import fastifyStatic from '@fastify/static'
 
 const __dirname = path.resolve();
 const fastify = Fastify({
+    http2: true,
+    https: {
+      key: fs.readFileSync(path.join(__dirname, '..', 'https', 'server.key')),
+      cert: fs.readFileSync(path.join(__dirname, '..', 'https', 'server.cert'))
+    },
     logger: {
         transport: {
             target: 'pino-pretty',
